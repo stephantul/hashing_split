@@ -6,14 +6,13 @@ from typing import Any, Callable, Dict, Hashable, Type
 
 logger = logging.getLogger("compute_hash")
 
+ConversionFunction = Callable[[Any], Hashable]
+Conversions = Dict[Type, ConversionFunction]
+
 # This dictionary contains a mapping from types to a function that converts
 # it to something hashable.
 # We default to doubles for floats and integers.
 # This can lead to loss of information for really really big integers.
-ConversionFunction = Callable[[Any], Hashable]
-Conversions = Dict[Type, ConversionFunction]
-
-
 CONVERSIONS: Conversions = {float: partial(struct.pack, "!d")}
 BASIC_HASHABLE = tuple([str, bytes])
 
@@ -65,6 +64,17 @@ def _recursive_step(X: Any, seed: int, conversions: Conversions) -> int:
 
 
 def recursive_convert(X: Any, seed: int, additional_conversions: Conversions) -> int:
-    """Recursively hash a"""
+    """Recursively hash an object.
+    
+    :param X: Anything you'd like to hash.
+    :param seed: The seed to hash with. This seed is appended to X before hashing.
+    :param additional_conversions: A dictionary mapping from types to functions.
+        For each type in additional_conversions, we check if the item in question is an instance 
+        of that type. If this is the case, we apply the specified conversion.
+        Note that it is never necessary to specify conversions for iterables that contain primitives,
+        e.g., numpy arrays, or for types that implement __hash__.
+    :returns: the hash value as a signed 64-bit integer.
+
+    """
     actual_conversions = {**CONVERSIONS, **additional_conversions}
     return _recursive_step(X, seed, actual_conversions)
