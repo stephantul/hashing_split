@@ -1,10 +1,9 @@
-from typing import Any, Callable, Hashable, Iterable, List, NewType, Optional, Tuple
+from typing import Hashable, Iterable, List, TypeVar, Optional, Tuple
 
 from hashingsplit.compute_hash import Conversions, recursive_convert
 
-AnyHashable = NewType("AnyHashable", object)
+AnyHashable = TypeVar("AnyHashable", bound=object)
 Split = Tuple[List[AnyHashable], List[Hashable], List[AnyHashable], List[Hashable]]
-ByteConverter = Callable[[Any], AnyHashable]
 
 
 def hash_split(
