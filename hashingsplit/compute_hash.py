@@ -1,27 +1,30 @@
 import logging
 import struct
 from functools import partial
-from itertools import chain
-from typing import Any, Callable, Dict, Hashable, Type, List
+from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
 from murmurhash import hash as murmurhash
 
 logger = logging.getLogger("compute_hash")
 
-ConversionFunction = Callable[[Any], Hashable]
-Conversions = Dict[Type, ConversionFunction]
-
+ConversionFunction = Callable[[Any], bytes]
+Conversions = Dict[Union[Type, Tuple[Type, ...]], ConversionFunction]
 
 
 # This dictionary contains a mapping from types to a function that converts
 # it to something hashable.
 # We default to doubles for floats and integers.
 # This can lead to loss of information for really really big integers.
-CONVERSIONS: Conversions = {(float, int): partial(struct.pack, "!d"), str: partial(bytes, encoding="utf-8")}
+CONVERSIONS: Conversions = {
+    (float, int): partial(struct.pack, "!d"),
+    str: partial(bytes, encoding="utf-8"),
+}
 BASIC_HASHABLE = tuple([str, bytes])
+
 
 def _hashing_function(X: bytes) -> int:
     return murmurhash(X)
+
 
 def flatten(X: Any) -> List[Any]:
     o = []
@@ -34,6 +37,7 @@ def flatten(X: Any) -> List[Any]:
     for x in X:
         o.extend(flatten(x))
     return o
+
 
 def _is_iterable(X: Any) -> bool:
     """
@@ -76,43 +80,18 @@ def _recursive_step(X: Any, seed: int, conversions: Conversions) -> int:
         accumulator ^= _hashing_function(x_converted)
 
     return accumulator
-    if isinstance(X, BASIC_HASHABLE):
-        if isinstance(X, str):
-            X = conversions[str](X)
-        return _hashing_function(X)
-
-    if _is_iterable(X):
-        accumulator = 0
-        if isinstance(X, dict):
-            X = X.items()
-            X = sorted(X)
-        if isinstance(X, set):
-            X = sorted(X)
-        for item in X:
-            accumulator ^= recursive_convert(item, seed, conversions)
-
-        return accumulator
-
-    for type_to_check, converter in conversions.items():
-        if isinstance(X, type_to_check):
-            X_converted = converter(X)
-            break
-    else:
-        X_converted = X
-    return _hashing_function(X_converted)
-
 
 
 def recursive_convert(X: Any, seed: int, additional_conversions: Conversions) -> int:
     """Recursively hash an object.
-    
+
     :param X: Anything you'd like to hash.
     :param seed: The seed to hash with. This seed is appended to X before hashing.
     :param additional_conversions: A dictionary mapping from types to functions.
-        For each type in additional_conversions, we check if the item in question is an instance 
-        of that type. If this is the case, we apply the specified conversion.
-        Note that it is never necessary to specify conversions for iterables that contain primitives,
-        e.g., numpy arrays, or for types that implement __hash__.
+        For each type in additional_conversions, we check if the item in question is an
+        instance of that type. If this is the case, we apply the specified conversion.
+        Note that it is never necessary to specify conversions for iterables that
+        contain primitives, e.g., numpy arrays.
     :returns: the hash value as a signed 64-bit integer.
 
     """

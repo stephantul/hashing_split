@@ -1,15 +1,15 @@
-from typing import Hashable, Iterable, List, TypeVar, Optional, Tuple
+from typing import Hashable, Iterable, List, Optional, Tuple, TypeVar
 
 from hashingsplit.compute_hash import Conversions, recursive_convert
 
 AnyHashable = TypeVar("AnyHashable", bound=object)
-Split = Tuple[List[AnyHashable], List[Hashable], List[AnyHashable], List[Hashable]]
+Split = Tuple[List[AnyHashable], List[AnyHashable], List[Hashable], List[Hashable]]
 
 
 def hash_split(
     X: Iterable[AnyHashable],
     y: Iterable[Hashable],
-    test_size: float = .1,
+    test_size: float = 0.1,
     seed: int = 0,
     additional_conversions: Optional[Conversions] = None,
 ) -> Split:
