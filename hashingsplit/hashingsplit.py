@@ -9,7 +9,7 @@ Split = Tuple[List[AnyHashable], List[Hashable], List[AnyHashable], List[Hashabl
 def hash_split(
     X: Iterable[AnyHashable],
     y: Iterable[Hashable],
-    test_size: float,
+    test_size: float = .1,
     seed: int = 0,
     additional_conversions: Optional[Conversions] = None,
 ) -> Split:
@@ -24,7 +24,8 @@ def hash_split(
     test_mod = round(1 / test_size)
 
     X_train, X_test, y_train, y_test = [], [], [], []
-    # Strict is true here because we might get generators.
+    # Strict is set to True here because we accept generators.
+    # So we can't check the length beforehand.
     for item, label in zip(X, y, strict=True):
         hashed = recursive_convert(item, seed, conversions)
         if (hashed % test_mod) == 0:
@@ -34,4 +35,4 @@ def hash_split(
             X_train.append(item)
             y_train.append(label)
 
-    return X_train, y_train, X_test, y_test
+    return X_train, X_test, y_train, y_test
