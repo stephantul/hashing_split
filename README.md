@@ -1,6 +1,6 @@
 # hashingsplit
 
-Stable train test splits using hashing.
+Stable train test splits using hashing. Based on an idea by [Jos Polfliet](https://www.linkedin.com/in/jos-polfliet/), found [here](https://www.linkedin.com/posts/jos-polfliet_two-big-problems-with-using-random-train-test-activity-7035938834844413952-LgY_?utm_source=share).
 
 Train test splits are normally done randomly, and are made reproducible using a fixed random seed. This approach fails, however if the cardinality of the data changes, i.e., data is added or removed: suddenly, points can be swapped from train to test and vice versa. This is annoying, as previous hyperparameter searches or other choices could be made on what is now test data.
 
