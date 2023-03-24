@@ -32,7 +32,7 @@ repos:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
   - repo: https://github.com/pycqa/isort
-    rev: 5.11.2
+    rev: 5.11.5
     hooks:
       - id: isort
         name: isort (python)
@@ -44,13 +44,3 @@ repos:
     rev: 22.6.0
     hooks:
       - id: black
-  - repo: local
-    hooks:
-      - id: unittest
-        name: unittest
-        entry: python -m unittest
-        language: system
-        types: [ python ]
-        pass_filenames: false
-        always_run: true
-        stages: [ commit ]
